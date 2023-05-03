@@ -241,6 +241,9 @@ def IterateInitials(MatList,HighestIndexList,IndexSubsetList,WeightVectors,Mon,b
 
         
 def GreedyMinimize(MM,base):
+    """
+    This is a documentation.
+    """
     n=MM.ncols()
     Sn=SymmetricGroup(n)
     pi=Sn.random_element()
