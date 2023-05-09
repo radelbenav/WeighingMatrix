@@ -1,63 +1,9 @@
-# File Name: SageCheckIWnkViaILPAgainstSignedPermutationsDate29082022Ver01.txt
-# Purpose: Check (Integer) Weighing matrices Via Integer Linear Programming against (direct) Signed permutations
-# Remark: After session with Radi. We are left with a question:
-#         Why No solution for R1,R2:  [0, 0, 0, 0, 0, 0, 5] [0, 0, 2, 2, 2, 2, 3]
-# Improvements: (1) Problem from remark fixed.
-#               (2) Added "sors" routine from Assaf, so to generalize the whole activity.
-# Remark: Radi on 8/5/22 noticed that solutions begin with negative values although BegWithPos should prevent it.
-#         We fix it.
-# Remark: On 12/5/22 we added two routines
-#         OurMain2: Given parameters of weighing matrix, weight and 2 divisors of order, it gives all pairs of
-#                   orthogonal rows of all types available of nsoks and filter them by the code invariany method.
-#         AddLine:  Given Nsoks and Sols gives all additions to Sols by one row taken from Nsoks
-#                   with permutations and signings and codeinvariant.
-#                   This routine is the basis for recursion to construct all Integer Weighing Matrices.
-#                   We have not run and debugged this routine yet. Next time...
-# Remark: On 15/5/22 we wroteqimproved/touched some routines:
-#         OurMain2: This is the new main. It gets the [WMweight, WMOrderDiv] of a weighing matrix and should output all inequivalent Integer weighing matrices of order=WMOrderDiv & weight=sqrt(WMweight. 
-#         FilterOrthogonalSignedPermutationsAgainstMatrix (haven't debugged yet)
-#         CodePrevRows (debugged carefully)
-# Remark: On 26052022 we debuged OurMain2 routine.
-# Remark On 30-6-22 Organizing the hp check. 
-#                   automatic base calculation for the code invariant
-#                   indexing the permutation and signs and saving the index in the configuration.
-# Remark on 3-7-22 Adding code to check for Hadamrd equivalnce for two rows for permutation AND row negation
-#                  Changes in "FilterOrthogonalSignedPermutationsByCodeInvariant" adding two code invariants for each line.
-# Remark on 14-7-22 Adding the index for each line of (NsoksIndex,PermutationIndex,SignsIndex) 
-#                    Bug for line [3, 2, 2, 2, 2, 0, 0], [[1, 16, 5], (2, -3, 2, -2, 0, 2, 0)]], 
-#                                 The SignsIndex looks incorrect - TBD in the next meeting
-# Remark on 21-7-22 Generelizing for AboveMatrix.
-#                    -   OrthogonalSignedPermutationsWithFirstNonZeroPositiveAgainstMatrix
-#                    -   normAboveAgainstMatrix(AboveMatrix,R2):
-#                    -   dpAgainstMatrix
-#                       need to correct FilterOrthogonalSignedPermutationsByCodeInvariantAgainstMatrix
-# Remark on 24-7-22  began adapting FilterOrthogonalSignedPermutationsByCodeInvariantAgainstMatrix
-#                    adding routine genCode for generating a code for the column i.
-#                   for next time - continue to adapt  FilterOrthogonalSignedPermutationsByCodeInvariantAgainstMatrix
-#                                    and remove CodePrevRows
-# Remark on 31-7-22 remove CodePrevTows and AddLine
-#                   Checked FilterOrthogonalSignedPermutationsByCodeInvariantAgainstMatrix for addition of one row.
-#                   Coded OurMain3 to work with FilterOrthogonalSignedPermutationsByCodeInvariantAgainstMatrix
-#                   Checked OurMain3 for two lines.
-# Remark on 31-7-22 Adapt OurMain3 for 7 lines
-#                   While running OurMain3 it works fine for 2 and 3 lines but crashes while
-#                             calculating for 4 lines in memory shortage
-# Remark on 18-7-22 Cleanup
-# Remark on 28-8-22 
-#                  integrate   FilterOrthogonalSignedPermutationsByCodeInvariant
-#                           to OrthogonalSignedPermutationsWithFirstNonZeroPositiveAgainstMatrix
-#                  integrate hp into OrthogonalSignedPermutationsWithFirstNonZeroPositiveAgainstMatrix
-#                  integrate gencode also
-#                  add goodPerm test to eliminate (-1) assignment to 0 (faster)
 
+"""
 
-def HadamardSpace(d): #Return a list of all Hadamard (+-1)-vectors of size d that begin with -1.
-    SpaceSize = 2^(d-1)
-    L=[ZZ(n).digits(2) for n in range(SpaceSize)]
-    L1 = [x+[0]*(d-len(x)-1) for x in L]
-    return([[-1]+[2*y-1 for y in x] for x in L1])
 
 def IsBegWithPos(L): #Returns True if L[0]>0. Otherwise return False.
+    x=1/0
     for x in L:
         if x>0:
             return(True)
@@ -65,12 +11,12 @@ def IsBegWithPos(L): #Returns True if L[0]>0. Otherwise return False.
             return(False)
     return(False)
 
-def goodPerm(L,s):#Given two lists L,s of the same length, check that there is no -1 in s corresponding to 0 in L.
-    for i in range(1,len(L)):
-        if (L[i]==0) and (s[i]==-1) : return False
-    return True
+
+
+
 
 def normAboveAgainstMatrix(AboveMatrix,R2):#AboveMatrix is a given IW partial matrix. R2 is a new row that we want to add to the matrix. We normalize R2[i]<0 if the column above it in AboveMatrix is zero.
+
     for i in range(len(R2)):
         if AboveMatrix.column(i).norm()==0:
             R2[i]=-abs(R2[i])
@@ -84,7 +30,38 @@ def normAbove_old(myMAT):#MyMat is a given IW partial matrix. We normalize each 
                 break
     return myMAT
 
+"""
+
+def dpAgainstMatrix(AboveMatrix,L2): #We compute the norm of the product of L2 (a candidate ro given in a list form) against the rows of AboveMatrix.
+    return((AboveMatrix*vector(L2)).norm())
+
+
+
+
+
+
+
+
+def AcceptOrRejectRow(AboveMat,Row,Mon,base): #This function returns True if AboveMat+Row is minimal. This means acceptance. Otherwise reject.
+    NewMat=AboveMat.stack(matrix(Row))
+    if NewMat==FindMinInHadClass(NewMat,Mon,base):
+        return True
+    else:
+        return False
+
+
+
+def OrderMat(SPMat,base):#This procedure reorders the columns of SPMat (a partial IW) by increasing lex order. We interpret each column as represention of a number in base 'base'. This entry should be sufficiently large to accomodate all possible entries in the matrix. 
+
+    nR=SPMat.nrows();
+    baseVec = vector([base^(nR-j) for j in range(nR)])  
+    SPMat=normAbove(SPMat)
+    SPMat=sorted(SPMat.columns(),key=lambda vec:baseVec*vec)
+    return matrix(SPMat).transpose()  
+
+
 def normAbove(myMAT):#MyMat is a given IW partial matrix. We normalize each column of MyMat to begin with a negative entry.
+    
     for i in range(myMAT.ncols()):
         for j in range(myMAT.nrows()):
             if myMAT[j,i]!=0:
@@ -92,32 +69,14 @@ def normAbove(myMAT):#MyMat is a given IW partial matrix. We normalize each colu
                 break
     return myMAT
 
-def dpAgainstMatrix(AboveMatrix,L2): #We compute the norm of the product of L2 (a candidate ro given in a list form) against the rows of AboveMatrix.
-    return((AboveMatrix*vector(L2)).norm())
-
-
-def OrderMat(SPMat,base):#This procedure reorders the columns of SPMat (a partial IW) by increasing lex order. We interpret each column as represention of a number in base 'base'. This entry should be sufficiently large to accomodate all possible entries in the matrix. 
-    nR=SPMat.nrows();
-    baseVec = vector([base^(nR-j) for j in range(nR)])  
-    SPMat=normAbove(SPMat)
-    SPMat=sorted(SPMat.columns(),key=lambda vec:baseVec*vec)
-    return matrix(SPMat).transpose()  
 
 def NormalizeByColumns(Mat,base): #This procedure normalizes a matrix by colums. That is, it returns the minimal matrix which is column equivalent to Mat.
     MatN=normAbove(Mat)
     MatN=OrderMat(Mat,base)
     return MatN
 
-def AllMonMatUpTo(n): #This gives the full list of all monomial matrices up to order n.
-    Mon={}
-    for m in range(1,n+1):
-        H=HadamardSpace(m)
-        P=[pi.matrix() for pi in SymmetricGroup(m)]
-        Lm=[-diagonal_matrix(h)*p for h in H for p in P]   
-        Mon[m]=Lm
-    return Mon
-
 def FindMinInHadClass(A,Mon,base): #This returns the minimal matrix in the class of A, by row lex ordering.
+
     m=A.nrows(); n=A.ncols()
     CodeMin=n*[10^10]
     for M in Mon[m]:
@@ -131,13 +90,29 @@ def FindMinInHadClass(A,Mon,base): #This returns the minimal matrix in the class
             MinMat=MAnormC
     return MinMat
 
-def AcceptOrRejectRow(AboveMat,Row,Mon,base): #This function returns True if AboveMat+Row is minimal. This means acceptance. Otherwise reject.
-    NewMat=AboveMat.stack(matrix(Row))
-    if NewMat==FindMinInHadClass(NewMat,Mon,base):
-        return True
-    else:
-        return False
 
+def AllMonMatUpTo(n): #This gives the full list of all monomial matrices up to order n.
+
+    Mon={}
+    for m in range(1,n+1):
+        H=HadamardSpace(m)
+        P=[pi.matrix() for pi in SymmetricGroup(m)]
+        Lm=[-diagonal_matrix(h)*p for h in H for p in P]   
+        Mon[m]=Lm
+    return Mon
+
+
+def goodPerm(L,s):#Given two lists L,s of the same length, check that there is no -1 in s corresponding to 0 in L.
+
+    for i in range(1,len(L)):
+        if (L[i]==0) and (s[i]==-1) : return False
+    return True
+
+def HadamardSpace(d): #Return a list of all Hadamard (+-1)-vectors of size d that begin with -1.
+    SpaceSize = 2^(d-1)
+    L=[ZZ(n).digits(2) for n in range(SpaceSize)]
+    L1 = [x+[0]*(d-len(x)-1) for x in L]
+    return([[-1]+[2*y-1 for y in x] for x in L1])
 
 def AllVectorsWeight(n,w): #This returns a list of all vectors from sors, including permutation and signing, that start with a negative entry. This is the full list of rows from which the rows of the weighing are taken.
     Pos=sors(w,n,sqrt(w))
@@ -323,7 +298,7 @@ def OrthogonalSignedPermutationsWithFirstNonZeroPositiveAgainstMatrix(AboveMat,L
                 r =[p[i]*sn[i] for i in range(d)]
                 sd1.append(r)
                 
-                """
+                
                 if true:
                     if dpAgainstMatrix(AboveMat,r)==0: # Is the vector orthogonal?
                         #r=normAboveAgainstMatrix(AboveMat,r)
@@ -342,16 +317,16 @@ def OrthogonalSignedPermutationsWithFirstNonZeroPositiveAgainstMatrix(AboveMat,L
                                 if not(M1sm in s): #Only consider row if it contributes new code invariant.
                                     s.append(M1s)
                                     sd.append([[Lindex[0],pi,si],R2i])   
-                    """                 
+                                     
     return(sd1) #Originally return(sd)
-
+"""
 def LEcodeVector(cv1,cv2): #This asks if two vectors cv1<=cv2 under the lex order (entries are ordered by integer ordering).
     for i in range(len(cv1)):
         if cv1[i]<cv2[i]: return true
         if cv1[i]>cv2[i]: return false
     return true
 
-
+"""
 def sors(n,r,maxsq):  ### Find all ways to express n=\sum_i s_i^2 as a sum of r squares, with maxsq>=s_1>=s_2>=...>=s_r.
     #n0=RDF(n). This is NOT our best algorithm (TODO: look for the more recent 'nsoks').
     n0=n
@@ -376,9 +351,9 @@ def sors(n,r,maxsq):  ### Find all ways to express n=\sum_i s_i^2 as a sum of r 
         else:
             return false
 
-
+"""
 def OurMain3(WMWeight, WMOrderDiv,lines): 
-    """
+    
     Return a list of (partial) IW matrices of a given size.
 
     Input: WMWeight = the desired weight.
@@ -387,7 +362,7 @@ def OurMain3(WMWeight, WMOrderDiv,lines):
 
     Output: A list of IW matrices with the given parameters. The list is an exhaustive list of all possible solution up to Hadamard equivalence.
             It is possible though that the same Hadamard type will repeat more than once. 
-    """
+    
     MaxSquare = WMWeight^(1/2)
     A = sors(WMWeight, WMOrderDiv, MaxSquare) #This gives the list of all possible rows up to sign and ordering.
     AllSoks=[list(map(lambda x:-x , A[len(A)-i-1])) for i in range(len(A)) ] #This is just to represent each row by the minimal lex representative.
@@ -425,7 +400,7 @@ collect()
 
 
 def AcceptOrRejectNewRow_Old(AboveMat,Row,base):
-    """
+    
     This procedure tests whether a new row, added to a minimal matrix keeps the matrix minimal. This is the main rejection criterion used in the main algorithm. If the result is not minimal then necessarily then AboveMat is assumed to have been treated in the past and can reject this row. The function returns True if Row is accepted and False if Row is rejected.
 
     The algorithm inserts the vector 'row' at some position (we loop on that position).
@@ -441,7 +416,7 @@ def AcceptOrRejectNewRow_Old(AboveMat,Row,base):
     Remarks: 
         a) In the case that Row equals (in case 2), it may still be possible to reject Row, if the minimization of the part below Row ends with a smaller matrix. We feel that this case occurs seldom and we can skip this test.
         b) As a consequence, we might generate extra solutions with initials not being minimal. We feel that this is not too much of an excess, but this should be tested.
-    """
+    
     m=AboveMat.nrows(); n=AboveMat.ncols()
     CodeVec=vector([base^(n-j) for j in range(n)])
     for ii in range(m-1):
@@ -453,3 +428,5 @@ def AcceptOrRejectNewRow_Old(AboveMat,Row,base):
             print(ii,NormTopPlusRow[-1],AboveMat[ii])
             return False  #Reject in permuted Row is smaller than original vector.
     return True
+
+"""
