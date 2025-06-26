@@ -1,7 +1,12 @@
 #################################################################################################
 #
 #
-#  A Sagemath Program for the classification of Integer Weighing matrices. The main function is ExhaustiveListIW(n,w,MinimizeRowLimit=4,max_entry=Infinity), which returns a list of all Integer Weighing matrices of order n and weight w, up to Hadamard equivalence. This list is exhaustive, but may contain repetitions of Hadamard equivalent matrices. Putting MinimizeRowLimit=n will give a fully classified list, but it will take a long time to compute. The default value is 4, which gives a  longer list, but still exhaustive in the sense that all matrices of order n and weight w are present, up to Hadamard equivalence.
+#  A Sagemath Program for the classification of Integer Weighing matrices. The main function is 
+#  ExhaustiveListIW(n,w,MinimizeRowLimit=4,max_entry=Infinity), which returns a list of all Integer Weighing 
+#  matrices of order n and weight w, up to Hadamard equivalence. This list is exhaustive, but may contain repetitions 
+#  of Hadamard equivalent matrices. Putting MinimizeRowLimit=n will give a fully classified list, but it will take a 
+#  long time to compute. The default value is 4, which gives a  longer list, but still exhaustive in the sense that all 
+#  matrices of order n and weight w are present, up to Hadamard equivalence.
 #
 # The algorithm is using the function Nsoks() which finds all ways to express n=\sum_i s_i^2 as a sum of r squares.
 #
