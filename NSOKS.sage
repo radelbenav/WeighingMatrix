@@ -42,7 +42,7 @@ def Nsoks(n,r,maxsq=-1):
             if i==r:
                 Lsqr.append([(s,r)])
             else:
-                rem=sum_of_sqrs(nnew,r-i,maxsq=s-1)
+                rem=Nsoks(nnew,r-i,maxsq=s-1)
                 if rem==[]:
                     continue
                 #print(rem)
