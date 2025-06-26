@@ -5,6 +5,8 @@ A Sage package for generating integral weighing matrices.
 
 2) The file NSOKS.sage consists of a function Nsoks(n,r), which outputs all way to write n as a sum of r squares. This is faster than previous implementations.
 
+3) The jupyter sagemath notebook Demosntration.ipynb shows how to use the package.
+
 For both, the main reference paper is "AN ALGORITHM FOR CONSTRUCTING AND CLASSIFYING
  THE SPACE OF SMALL INTEGER WEIGHING MATRICES, https://arxiv.org/pdf/2304.09495".
 
