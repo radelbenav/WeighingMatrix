@@ -3,12 +3,14 @@
 #
 #  A Sagemath Program for the classification of Integer Weighing matrices. The main function is ExhaustiveListIW(n,w,MinimizeRowLimit=4,max_entry=Infinity), which returns a list of all Integer Weighing matrices of order n and weight w, up to Hadamard equivalence. This list is exhaustive, but may contain repetitions of Hadamard equivalent matrices. Putting MinimizeRowLimit=n will give a fully classified list, but it will take a long time to compute. The default value is 4, which gives a  longer list, but still exhaustive in the sense that all matrices of order n and weight w are present, up to Hadamard equivalence.
 #
-# The algorithm is using the function sors() which finds all ways to express n=\sum_i s_i^2 as a sum of r squares.
+# The algorithm is using the function Nsoks() which finds all ways to express n=\sum_i s_i^2 as a sum of r squares.
 #
 # Reference: AN ALGORITHM FOR CONSTRUCTING AND CLASSIFYING
 # THE SPACE OF SMALL INTEGER WEIGHING MATRICES. "https://arxiv.org/pdf/2304.09495"
 #
 #################################################################################################
+
+load("NSOKS.sage") 
 
 def HadamardSpace(d): #Return a list of all Hadamard (+-1)-vectors of size d that begin with -1.
     SpaceSize = 2^(d-1)
@@ -90,12 +92,13 @@ def FindMinInHadClass(A,Mon,base): #This returns the minimal matrix in the class
 
 
 def AllVectorsWeight(n,w,max_entry=Infinity): #This returns a list of all vectors from sors, including permutation and signing, that start with a negative entry. This is the full list of rows from which the rows of the weighing are taken.
-    Pos=sors(w,n,min(sqrt(w),max_entry))
+    Pos=Nsoks(w,n,maxsq=min(sqrt(w),max_entry))
     AboveMat=matrix(n*[0])
     AllVectors=[]
     count=0
     for Typ in Pos:
-        MTyp=OrthogonalSignedPermutationsWithFirstNonZeroPositiveAgainstMatrix(AboveMat,Typ,(0,0),floor(sqrt(w)))
+        sqlist=sum([mul*[sq] for sq,mul in Typ],[])
+        MTyp=OrthogonalSignedPermutationsWithFirstNonZeroPositiveAgainstMatrix(AboveMat,sqlist,(0,0),floor(sqrt(w)))
         for x in MTyp:
             for j in range(len(x)):
                 if x[j]>0:
@@ -194,6 +197,7 @@ def IterateInitials(MatList,HighestIndexList,IndexSubsetList,WeightVectors,Mon,b
         return MatList
 
 
+#### This is an old program for Nsoks. Not is use.
             
 def sors(n,r,maxsq):  ### Find all ways to express n=\sum_i s_i^2 as a sum of r squares, with maxsq>=s_1>=s_2>=...>=s_r.
     #n0=RDF(n). This is NOT our best algorithm (TODO: look for the more recent 'nsoks').
